@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+{% block title %}User Profile - Online Exam System{% endblock %}
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-8">
+    <div class="flex items-center space-x-2 text-sm text-slate-500">
+        <a href="{{ url_for('dashboard') }}" class="hover:underline">Dashboard</a>
+        <span>&middot;</span>
+        <span class="text-slate-800 font-medium">My Profile</span>
+    </div>
+
+    <!-- Profile Header Card -->
+    <div class="bg-white border border-slate-150 rounded-2xl p-8 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div class="flex items-center gap-5">
+            <div class="w-16 h-16 bg-indigo-100 text-indigo-700 flex items-center justify-center rounded-2xl text-2xl font-black shadow-inner">
+                {{ user.name[0] | upper }}
+            </div>
+            <div>
+                <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">{{ user.name }}</h1>
+                <p class="text-sm text-slate-500 mt-1">{{ user.email }}</p>
+                <div class="flex flex-wrap gap-2 mt-3">
+                    <span class="text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 font-bold px-3 py-1 rounded-full uppercase tracking-wider">{{ user.role }}</span>
+                    {% if user.role == "student" %}
+                        <span class="text-xs bg-slate-100 border border-slate-200 text-slate-700 font-bold px-3 py-1 rounded-full">Roll: {{ user.roll }}</span>
+                    {% else %}
+                        <span class="text-xs bg-slate-100 border border-slate-200 text-slate-700 font-bold px-3 py-1 rounded-full">ID: {{ user.teacher_uid }}</span>
+                    {% endif %}
+                    <span class="text-xs bg-slate-100 border border-slate-200 text-slate-700 font-bold px-3 py-1 rounded-full">Dept: {{ user.department }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role specific KPI Statistics block -->
+        <div class="flex items-center gap-8 border-t border-slate-100 md:border-t-0 pt-4 md:pt-0">
+            {% if user.role == "teacher" %}
+                <div class="text-center">
+                    <p class="text-3xl font-extrabold text-indigo-600">{{ stats.exams_created }}</p>
+                    <p class="text-xs uppercase font-bold text-slate-400 mt-1">Exams Deployed</p>
+                </div>
+            {% else %}
+                <div class="text-center">
+                    <p class="text-3xl font-extrabold text-indigo-600">{{ stats.exams_taken }}</p>
+                    <p class="text-xs uppercase font-bold text-slate-400 mt-1">Assessments Taken</p>
+                </div>
+                <div class="text-center border-l border-slate-100 pl-8">
+                    <p class="text-3xl font-extrabold text-indigo-600">{{ stats.average_percentage }}%</p>
+                    <p class="text-xs uppercase font-bold text-slate-400 mt-1">Average Grade</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if user.role == "student" %}
+        <!-- Student Assessment History List -->
+        <h2 class="text-xl font-extrabold text-slate-900 tracking-tight">Your Completed Assessments</h2>
+        <div class="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-sm">
+            <table class="min-w-full divide-y divide-slate-200 text-sm">
+                <thead class="bg-slate-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Exam Title</th>
+                        <th scope="col" class="px-6 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wider">Submitted On</th>
+                        <th scope="col" class="px-6 py-3.5 text-right text-xs font-bold text-slate-500 uppercase tracking-wider">Marks Scored</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-150">
+                    {% for sub in stats.submissions %}
+                        <tr class="hover:bg-slate-50/50 transition">
+                            <td class="px-6 py-4 font-semibold text-slate-900">{{ sub.title }}</td>
+                            <td class="px-6 py-4 text-slate-500">{{ sub.submitted_at }}</td>
+                            <td class="px-6 py-4 text-right font-bold text-indigo-600">
+                                {{ sub.score }} / {{ sub.total_marks }}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="px-6 py-12 text-center text-slate-400 font-medium">
+                                You have not submitted any exam records yet.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
