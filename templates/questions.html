@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+{% block title %}Manage Questions - {{ exam.title }}{% endblock %}
+{% block content %}
+<div class="space-y-8">
+    <div class="flex items-center space-x-2 text-sm text-gray-500">
+        <a href="{{ url_for('dashboard') }}" class="hover:underline">Dashboard</a>
+        <span>&middot;</span>
+        <span class="text-gray-800 font-medium">Questions Manager</span>
+    </div>
+
+    <!-- Exam Metadata -->
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">{{ exam.title }}</h1>
+            <p class="text-xs text-gray-500 mt-1">Duration: {{ exam.duration }} minutes &middot; Total Marks: {{ exam.total_marks }}</p>
+        </div>
+        <div class="text-sm font-semibold bg-indigo-50 border border-indigo-200 text-indigo-800 px-4 py-2 rounded-md">
+            {{ questions | length }} Question(s) Configured
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Add Question Form -->
+        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit lg:col-span-1">
+            <h2 class="text-lg font-bold text-gray-800 mb-4">Add MCQ Question</h2>
+            <form action="{{ url_for('manage_questions', exam_id=exam.id) }}" method="POST" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Question Description</label>
+                    <textarea name="question_text" required placeholder="e.g. Which software process model is risk-driven?" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm"></textarea>
+                </div>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-0.5">Option A</label>
+                        <input type="text" name="option_a" required placeholder="Option A text"
+                               class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-0.5">Option B</label>
+                        <input type="text" name="option_b" required placeholder="Option B text"
+                               class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-0.5">Option C</label>
+                        <input type="text" name="option_c" required placeholder="Option C text"
+                               class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 mb-0.5">Option D</label>
+                        <input type="text" name="option_d" required placeholder="Option D text"
+                               class="w-full px-3 py-1.5 border border-gray-300 rounded-md text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Correct Key Option</label>
+                    <select name="correct_option" required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                        <option value="A">Option A</option>
+                        <option value="B">Option B</option>
+                        <option value="C">Option C</option>
+                        <option value="D">Option D</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-md transition text-sm">
+                    Save Question
+                </button>
+            </form>
+        </div>
+
+        <!-- Question List display -->
+        <div class="lg:col-span-2 space-y-4">
+            <h2 class="text-lg font-bold text-gray-800">Current Question Bank</h2>
+            {% for q in questions %}
+                <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-start justify-between">
+                            <p class="font-bold text-gray-800 text-sm md:text-base">{{ loop.index }}. {{ q.question_text }}</p>
+                            <form action="{{ url_for('delete_question', exam_id=exam.id, question_id=q.id) }}" method="POST" onsubmit="return confirm('Delete this question?');">
+                                <button type="submit" class="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-wider">Delete</button>
+                            </form>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 text-xs md:text-sm">
+                            <div class="p-2.5 rounded-md border {% if q.correct_option == 'A' %}bg-indigo-50 border-indigo-200 font-semibold text-indigo-700{% else %}bg-gray-50 border-gray-150 text-gray-600{% endif %}">
+                                A. {{ q.option_a }}
+                            </div>
+                            <div class="p-2.5 rounded-md border {% if q.correct_option == 'B' %}bg-indigo-50 border-indigo-200 font-semibold text-indigo-700{% else %}bg-gray-50 border-gray-150 text-gray-600{% endif %}">
+                                B. {{ q.option_b }}
+                            </div>
+                            <div class="p-2.5 rounded-md border {% if q.correct_option == 'C' %}bg-indigo-50 border-indigo-200 font-semibold text-indigo-700{% else %}bg-gray-50 border-gray-150 text-gray-600{% endif %}">
+                                C. {{ q.option_c }}
+                            </div>
+                            <div class="p-2.5 rounded-md border {% if q.correct_option == 'D' %}bg-indigo-50 border-indigo-200 font-semibold text-indigo-700{% else %}bg-gray-50 border-gray-150 text-gray-600{% endif %}">
+                                D. {{ q.option_d }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="bg-gray-50 border border-dashed border-gray-300 rounded-lg py-16 text-center text-gray-500 font-medium text-sm">
+                    No questions have been configured for this exam yet.
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

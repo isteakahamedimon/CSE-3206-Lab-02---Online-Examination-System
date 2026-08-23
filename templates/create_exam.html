@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+{% block title %}Create Exam - Online Exam System{% endblock %}
+{% block content %}
+<div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-200 mt-6">
+    <div class="flex items-center space-x-2 text-sm text-gray-500 mb-4">
+        <a href="{{ url_for('dashboard') }}" class="hover:underline">Dashboard</a>
+        <span>&middot;</span>
+        <span class="text-gray-800 font-medium">New Exam</span>
+    </div>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Create Sessional Exam</h2>
+    <form action="{{ url_for('create_exam') }}" method="POST" class="space-y-5">
+        <div>
+            <label for="title" class="block text-sm font-semibold text-gray-700 mb-1">Exam Title / Course Topic</label>
+            <input type="text" name="title" id="title" required placeholder="e.g. Lab 2 Assessment - Software Process Models"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="duration" class="block text-sm font-semibold text-gray-700 mb-1">Duration (Minutes)</label>
+                <input type="number" name="duration" id="duration" required min="1" placeholder="30"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+            </div>
+            <div>
+                <label for="total_marks" class="block text-sm font-semibold text-gray-700 mb-1">Total Marks</label>
+                <input type="number" name="total_marks" id="total_marks" required min="1" placeholder="50"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <div>
+                <label for="target_dept" class="block text-sm font-semibold text-gray-700 mb-1">Target Department (Optional)</label>
+                <select name="target_dept" id="target_dept"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    <option value="">All Departments</option>
+                    <option value="CSE">CSE</option>
+                    <option value="EEE">EEE</option>
+                    <option value="ME">ME</option>
+                    <option value="CE">CE</option>
+                </select>
+            </div>
+            <div>
+                <label for="target_roll_pattern" class="block text-sm font-semibold text-gray-700 mb-1">Target Roll Pattern (Optional)</label>
+                <input type="text" name="target_roll_pattern" id="target_roll_pattern" placeholder="e.g. 2203% or 220301%"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                <span class="text-[10px] text-gray-400">Use % as wildcard (e.g. 2203% matches all rolls starting with 2203)</span>
+            </div>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-gray-150">
+            <a href="{{ url_for('dashboard') }}" class="px-4 py-2 border border-gray-350 text-gray-700 hover:bg-gray-50 rounded-md transition text-sm font-medium">Cancel</a>
+            <button type="submit" class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-md shadow transition text-sm">
+                Create & Continue
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

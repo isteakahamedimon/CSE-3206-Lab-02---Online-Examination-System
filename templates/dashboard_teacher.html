@@ -1,0 +1,116 @@
+{% extends "layout.html" %}
+{% block title %}Teacher Dashboard{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="bg-indigo-50 border border-indigo-150 p-6 rounded-lg shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-indigo-900">Welcome, {{ session['name'] }}!</h1>
+            <p class="text-sm text-indigo-700 mt-1">Examiner Portal — Design assessments, edit question banks, and review sessional grades.</p>
+        </div>
+        <a href="{{ url_for('create_exam') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-md shadow transition text-sm whitespace-nowrap">
+            + Create New Exam
+        </a>
+    </div>
+
+    <!-- Deployed Exams Table -->
+    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <span class="w-2.5 h-2.5 bg-green-500 rounded-full"></span>
+        Deployed Exams (Available to targeted students)
+    </h2>
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-x-auto mb-8">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Exam Title</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Targets</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Duration</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Marks</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Submissions</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                {% set ns1 = namespace(has_deployed=false) %}
+                {% for exam in exams %}
+                    {% if exam.is_public == 1 %}
+                        {% set ns1.has_deployed = true %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{{ exam.title }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                                <span class="bg-slate-100 px-2 py-0.5 rounded font-bold">Dept: {{ exam.target_dept if exam.target_dept else 'All' }}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded font-bold">Roll: {{ exam.target_roll_pattern if exam.target_roll_pattern else 'All' }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ exam.duration }} mins</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ exam.total_marks }} marks</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                    {{ exam.submission_count }} submitted
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right space-x-3 flex items-center justify-end">
+                                <form action="{{ url_for('toggle_exam_status', exam_id=exam.id) }}" method="POST" class="inline">
+                                    <button type="submit" class="text-xs bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-2.5 rounded transition">Unpublish</button>
+                                </form>
+                                <a href="{{ url_for('manage_questions', exam_id=exam.id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">Questions</a>
+                                <a href="{{ url_for('gradebook', exam_id=exam.id) }}" class="text-green-600 hover:text-green-900 font-medium">Gradebook</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                {% if not ns1.has_deployed %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-10 text-center text-gray-450 font-medium">No exams deployed yet.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Undeployed (Draft) Exams Table -->
+    <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+        <span class="w-2.5 h-2.5 bg-gray-400 rounded-full"></span>
+        Undeployed Exams (Drafts / Hidden from students)
+    </h2>
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Exam Title</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Targets</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Duration</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 tracking-wider">Marks</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                {% set ns2 = namespace(has_drafts=false) %}
+                {% for exam in exams %}
+                    {% if exam.is_public == 0 %}
+                        {% set ns2.has_drafts = true %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{{ exam.title }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-500">
+                                <span class="bg-slate-100 px-2 py-0.5 rounded font-bold">Dept: {{ exam.target_dept if exam.target_dept else 'All' }}</span>
+                                <span class="bg-slate-100 px-2 py-0.5 rounded font-bold">Roll: {{ exam.target_roll_pattern if exam.target_roll_pattern else 'All' }}</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ exam.duration }} mins</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ exam.total_marks }} marks</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right space-x-3 flex items-center justify-end">
+                                <form action="{{ url_for('toggle_exam_status', exam_id=exam.id) }}" method="POST" class="inline">
+                                    <button type="submit" class="text-xs bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-2.5 rounded transition">Publish/Deploy</button>
+                                </form>
+                                <a href="{{ url_for('manage_questions', exam_id=exam.id) }}" class="text-indigo-600 hover:text-indigo-900 font-medium">Questions</a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+                {% if not ns2.has_drafts %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-10 text-center text-gray-455 font-medium">No drafts configuration found.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
