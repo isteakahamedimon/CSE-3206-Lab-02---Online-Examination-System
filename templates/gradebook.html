@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+{% block title %}Gradebook - {{ exam.title }}{% endblock %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center space-x-2 text-sm text-gray-500">
+        <a href="{{ url_for('dashboard') }}" class="hover:underline">Dashboard</a>
+        <span>&middot;</span>
+        <span class="text-gray-800 font-medium">Gradebook</span>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-800">Gradebook: {{ exam.title }}</h1>
+            <p class="text-xs text-gray-500 mt-1">Review student performance records for this sessional assessment.</p>
+        </div>
+        <!-- Search bar -->
+        <form action="{{ url_for('gradebook', exam_id=exam.id) }}" method="GET" class="flex gap-2 max-w-sm w-full">
+            <input type="text" name="search" placeholder="Search by name or email..." value="{{ search_query }}"
+                   class="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+            <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-4 py-2 rounded-md transition text-sm">Filter</button>
+        </form>
+    </div>
+
+    <!-- Submissions table -->
+    <div class="bg-white shadow-sm border border-gray-200 rounded-lg overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Student Name</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Roll</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dept</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Email Address</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Submission Date</th>
+                    <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Obtained Marks</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200 text-sm">
+                {% for sub in submissions %}
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-900">{{ sub.student_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ sub.student_roll }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ sub.student_dept }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ sub.student_email }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-gray-500">{{ sub.submitted_at }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-indigo-600">
+                            {{ sub.score }} / {{ exam.total_marks }}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            No student submissions found matching the criteria.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
