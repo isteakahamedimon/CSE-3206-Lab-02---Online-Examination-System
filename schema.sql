@@ -50,3 +50,4 @@ CREATE TABLE IF NOT EXISTS submissions (
     FOREIGN KEY(exam_id) REFERENCES exams(id) ON DELETE CASCADE,
     UNIQUE(student_id, exam_id)
 );
+
