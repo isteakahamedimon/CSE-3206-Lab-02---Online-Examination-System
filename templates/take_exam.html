@@ -1,0 +1,101 @@
+{% extends "layout.html" %}
+{% block title %}Active Assessment Client{% endblock %}
+{% block content %}
+<div class="space-y-8">
+    <div class="bg-slate-900 text-white p-6 rounded-lg shadow-md flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <div>
+            <span class="text-xs bg-red-500 text-white px-2.5 py-1 rounded-full font-bold uppercase animate-pulse">Live Exam Window</span>
+            <h1 class="text-2xl font-bold mt-2 text-indigo-200">{{ exam.title }}</h1>
+            <p class="text-xs text-slate-400 mt-1">Rule: Refreshing or navigating away will NOT reset your timer on the server.</p>
+        </div>
+        <div class="bg-slate-800 border border-slate-700 px-6 py-3 rounded-lg text-center min-w-[150px]">
+            <p class="text-xs uppercase tracking-wider text-slate-400 font-semibold">Remaining Time</p>
+            <p id="countdown" class="text-3xl font-black font-mono text-red-400 mt-1">--:--</p>
+        </div>
+    </div>
+
+    <!-- Live MCQ Form Client -->
+    <form id="exam-form" action="{{ url_for('take_exam', exam_id=exam.id) }}" method="POST" class="space-y-6">
+        {% for q in questions %}
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
+                <p class="font-bold text-gray-800 text-base mb-4">{{ loop.index }}. {{ q.question_text }}</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label class="flex items-center bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-md p-3 cursor-pointer transition text-sm">
+                        <input type="radio" name="q_{{ q.id }}" value="A" required class="h-4 w-4 text-indigo-600 focus:ring-indigo-500">
+                        <span class="ml-3 text-gray-700 font-medium">A. {{ q.option_a }}</span>
+                    </label>
+                    <label class="flex items-center bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-md p-3 cursor-pointer transition text-sm">
+                        <input type="radio" name="q_{{ q.id }}" value="B" required class="h-4 w-4 text-indigo-600 focus:ring-indigo-500">
+                        <span class="ml-3 text-gray-700 font-medium">B. {{ q.option_b }}</span>
+                    </label>
+                    <label class="flex items-center bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-md p-3 cursor-pointer transition text-sm">
+                        <input type="radio" name="q_{{ q.id }}" value="C" required class="h-4 w-4 text-indigo-600 focus:ring-indigo-500">
+                        <span class="ml-3 text-gray-700 font-medium">C. {{ q.option_c }}</span>
+                    </label>
+                    <label class="flex items-center bg-gray-50 hover:bg-indigo-50 border border-gray-200 hover:border-indigo-200 rounded-md p-3 cursor-pointer transition text-sm">
+                        <input type="radio" name="q_{{ q.id }}" value="D" required class="h-4 w-4 text-indigo-600 focus:ring-indigo-500">
+                        <span class="ml-3 text-gray-700 font-medium">D. {{ q.option_d }}</span>
+                    </label>
+                </div>
+            </div>
+        {% endfor %}
+        <div class="flex justify-end p-4">
+            <button type="submit" onclick="return confirm('Do you want to finalize your exam submission?');"
+                    class="px-8 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg shadow-md transition transform hover:-translate-y-0.5">
+                Finalize & Submit Answers
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    const examDurationMinutes = parseInt("{{ exam.duration }}");
+    const examEndTimeKey = "exam_end_time_{{ exam.id }}";
+    
+    let endTime = localStorage.getItem(examEndTimeKey);
+    
+    if (!endTime) {
+        endTime = Date.now() + examDurationMinutes * 60 * 1000;
+        localStorage.setItem(examEndTimeKey, endTime);
+    } else {
+        endTime = parseInt(endTime);
+    }
+
+    const timer = setInterval(function() {
+        const now = Date.now();
+        const difference = endTime - now;
+
+        if (difference <= 0) {
+            clearInterval(timer);
+            localStorage.removeItem(examEndTimeKey);
+            document.getElementById("countdown").innerText = "EXPIRED";
+            alert("Sessional Exam Time Limit Exceeded. Answers will auto-submit now!");
+            document.getElementById("exam-form").submit();
+        } else {
+            const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+            
+            const minStr = minutes < 10 ? "0" + minutes : minutes;
+            const secStr = seconds < 10 ? "0" + seconds : seconds;
+            
+            document.getElementById("countdown").innerText = minStr + ":" + secStr;
+            
+            if (difference < 60000) {
+                document.getElementById("countdown").className = "text-3xl font-black font-mono text-red-500 animate-pulse";
+            }
+        }
+    }, 1000);
+
+    // Prevent random loss of input data on accidental page tab switch
+    window.addEventListener('beforeunload', function (e) {
+        if (localStorage.getItem(examEndTimeKey)) {
+            e.preventDefault();
+            e.returnValue = '';
+        }
+    });
+
+    document.getElementById("exam-form").addEventListener("submit", function() {
+        localStorage.removeItem(examEndTimeKey);
+    });
+</script>
+{% endblock %}
